@@ -1,0 +1,46 @@
+{
+    "name": "elhareth/laravel-eloquent-metable",
+    "description": "A Laravel package to extend Eloquent models data",
+    "keywords": [
+        "elhareth",
+        "laravel",
+        "eloquent",
+        "metadata",
+        "laravel-metable"
+    ],
+    "homepage": "https://github.com/elhareth/laravel-eloquent-metable",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Elhareth Muhammed",
+            "email": "elhareth95@yahoo.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "ext-json": "*",
+        "illuminate/collections": "^10.0",
+        "illuminate/contracts": "^10.0",
+        "illuminate/database": "^10.0",
+        "illuminate/support": "^10.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Elhareth\\LaravelEloquentMetable\\": "src/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Elhareth\\LaravelEloquentMetable\\EloquentMetableServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
