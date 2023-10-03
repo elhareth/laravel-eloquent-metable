@@ -14,7 +14,6 @@ class EloquentMetableServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadMigrationsFrom(dirname(__DIR__) . '/database/migrations');
-        Metable::observe(MetableObserver::class);
     }
 
     /**

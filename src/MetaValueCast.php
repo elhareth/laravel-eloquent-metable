@@ -34,7 +34,6 @@ class MetaValueCast implements CastsAttributes
 
 
         if (str($value)->startsWith($serializedStarts)) {
-            // Suppose serialized, Try unserialize
             try {
                 if ($value = @unserialize($value)) {
                     if (is_array($value)) {
@@ -64,10 +63,10 @@ class MetaValueCast implements CastsAttributes
     {
         if ($value instanceof Enumerable) {
             return serialize($value->all());
-        } elseif (is_object($value) || is_array($value) || is_iterable($value)) {
-            return serialize($value);
-        } else {
+        } elseif (is_string($value)) {
             return $value;
+        } else {
+            return serialize($value);
         }
     }
 }

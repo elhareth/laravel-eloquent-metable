@@ -2,21 +2,18 @@
 
 namespace Elhareth\LaravelEloquentMetable;
 
-use Elhareth\LaravelEloquentMetable\DataType\Registry;
-
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * Model for storing meta data.
  *
- * @property int $id
+ * @property int    $metable_id
  * @property string $metable_type
- * @property int $metable_id
- * @property string $type
- * @property string $key
+ * @property string $name
  * @property string $value
- * @property Model $metable
+ * @property string $group
+ * @property Model  $metable
  */
 class Metable extends Model
 {
@@ -48,13 +45,6 @@ class Metable extends Model
     protected $casts = [
         'value' => MetaValueCast::class,
     ];
-
-    /**
-     * The relationships that should always be loaded.
-     *
-     * @var array
-     */
-    protected $with = [];
 
     /**
      * Queued Value

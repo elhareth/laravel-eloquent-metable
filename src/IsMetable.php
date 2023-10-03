@@ -146,7 +146,7 @@ trait IsMetable
      *
      *
      */
-    public function getMetablesAttribute()
+    public function getQueuedMetablesAttribute()
     {
         return $this->queuedMetables;
     }
@@ -256,6 +256,17 @@ trait IsMetable
         if ($this->hasMeta($name)) {
             $this->metalist()->where('name', $name)->delete();
         }
+    }
+
+    /**
+     * Get Meta by group
+     * 
+     * @param  string $group
+     * @return Collection
+     */
+    public function getMetaGroup(string $group)
+    {
+        return $this->metalist()->where('group', $group)->get();
     }
 
     /**
