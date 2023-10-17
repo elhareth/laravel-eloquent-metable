@@ -228,7 +228,7 @@ trait IsMetable
     public function getMeta(string $name, $default = null)
     {
         if ($this->hasMeta($name)) {
-            return $this->metalist()->where('name', $name)->value;
+            return $this->metalist()->where('name', $name)->first()?->value;
         }
 
         return $default;
