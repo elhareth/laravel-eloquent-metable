@@ -43,6 +43,8 @@ trait IsMetable
             $model->upsertingMetables($model->queuedMetables);
 
             $model->queuedMetables = [];
+
+            $model->cacheMetables();
         });
 
         static::deleted(function (self $model) {
@@ -60,9 +62,7 @@ trait IsMetable
     protected function initializeIsMetable()
     {
         if (!isset($this->cachedMetables)) {
-            if ($this->relationLoaded('metalist')) {
-                $this->cacheMetables();
-            }
+            $this->cacheMetables();
         }
     }
 
@@ -250,7 +250,6 @@ trait IsMetable
 
             $metalist[$name]['metable_id'] = $this->getKey();
             $metalist[$name]['metable_type'] = $this->getMorphClass();
-
         }
 
 
@@ -360,7 +359,6 @@ trait IsMetable
                 'metable_id' => $this->getKey(),
                 'metable_type' => $this->getMorphClass(),
             ];
-
         }
 
         return $metalist;
