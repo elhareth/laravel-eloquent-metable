@@ -19,13 +19,6 @@ trait IsMetable
     protected array $queuedMetables = [];
 
     /**
-     * Cahced Metables
-     *
-     * @var Collection|array
-     */
-    protected $cachedMetables;
-
-    /**
      * Register trait boot function
      */
     protected static function bootIsMetable()
@@ -40,9 +33,6 @@ trait IsMetable
             }
 
             $model->upsertingMetables($model->queuedMetables);
-
-            $model->clearQueudMetables();
-
         });
 
 
@@ -62,9 +52,7 @@ trait IsMetable
      */
     protected function initializeIsMetable()
     {
-        if (!isset($this->cachedMetables)) {
-            $this->cacheMetables();
-        }
+        //
     }
 
     /**
@@ -165,28 +153,6 @@ trait IsMetable
     }
 
     /**
-     * Cache metables as key=>value
-     *
-     * @return void
-     */
-    protected function cacheMetables()
-    {
-        $this->cachedMetables = $this->metalist->mapWithKeys(function ($meta, $key) {
-            return [$meta->name => $meta->value];
-        });
-    }
-
-    /**
-     * Get cached metables
-     *
-     * @return Collection
-     */
-    public function getCachedMetables(): BaseCollection
-    {
-        return $this->cachedMetables ?: collect();
-    }
-
-    /**
      * Get Queued Metables list
      *
      * @return Collection|array|null
@@ -210,16 +176,6 @@ trait IsMetable
         }
 
         $this->upsertingMetables($metables);
-    }
-
-    /**
-     * Clear queued metables
-     *
-     * @return void
-     */
-    public function clearQueudMetables()
-    {
-        $this->queuedMetables = [];
     }
 
     /**
@@ -287,10 +243,6 @@ trait IsMetable
      */
     public function getMeta(string $name, $default = null)
     {
-        if ($this->getCachedMetables()->has($name)) {
-            return $this->getCachedMetables()->get($name);
-        }
-
         if ($this->hasMeta($name)) {
             return $this->metalist()->where('name', $name)->first()?->value;
         }
@@ -348,7 +300,7 @@ trait IsMetable
             'metable_id' => $this->getkey(),
             'metable_type' => $this->getMorphClass(),
         ]);
-        
+
         if(!isset($group)) $meta->group = $group;
 
         $meta->value = $value;
@@ -373,7 +325,7 @@ trait IsMetable
             $egroup = is_array($val) && array_key_exists('group', $val) ? $val['group'] : $group;
 
             $evalue = is_string($evalue) ? $evalue : serialize($evalue);
-            
+
             $metalist[$key] = [
                 'name' => $ename,
                 'value' => $evalue,
