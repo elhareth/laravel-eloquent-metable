@@ -32,7 +32,6 @@ class MetaValueCast implements CastsAttributes
             'O:',
         ];
 
-
         if (str($value)->startsWith($serializedStarts)) {
             try {
                 if ($value = @unserialize($value)) {

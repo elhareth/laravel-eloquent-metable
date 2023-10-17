@@ -2,17 +2,12 @@
 
 namespace Elhareth\LaravelEloquentMetable;
 
-use ArrayAccess;
-use InvalidArgumentException;
-
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection as BaseCollection;
 
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 
 trait IsMetable
 {
@@ -25,7 +20,7 @@ trait IsMetable
 
     /**
      * Cahced Metables
-     * 
+     *
      * @var Collection|array
      */
     protected $cachedMetables;
@@ -35,29 +30,35 @@ trait IsMetable
      */
     protected static function bootIsMetable()
     {
+        // Created
         static::created(function (self $model) {
+
+            $model->upsertingMetables($model->getDefaultMetables());
+
             if (count($model->queuedMetables) === 0) {
                 return;
             }
 
             $model->upsertingMetables($model->queuedMetables);
 
-            $model->queuedMetables = [];
+            $model->clearQueudMetables();
 
-            $model->cacheMetables();
         });
 
+
+        // Deleted
         static::deleted(function (self $model) {
+
             if (method_exists($model, 'isForceDeleting') && !$model->isForceDeleting()) {
                 return;
             }
+
             $model->deleteMetaRecords();
         });
     }
 
     /**
-     * 
-     * 
+     * Initialize Trait
      */
     protected function initializeIsMetable()
     {
@@ -165,7 +166,7 @@ trait IsMetable
 
     /**
      * Cache metables as key=>value
-     * 
+     *
      * @return void
      */
     protected function cacheMetables()
@@ -177,7 +178,7 @@ trait IsMetable
 
     /**
      * Get cached metables
-     * 
+     *
      * @return Collection
      */
     public function getCachedMetables(): BaseCollection
@@ -186,8 +187,9 @@ trait IsMetable
     }
 
     /**
+     * Get Queued Metables list
      *
-     *
+     * @return Collection|array|null
      */
     public function getQueuedMetablesAttribute()
     {
@@ -211,6 +213,16 @@ trait IsMetable
     }
 
     /**
+     * Clear queued metables
+     *
+     * @return void
+     */
+    public function clearQueudMetables()
+    {
+        $this->queuedMetables = [];
+    }
+
+    /**
      * Upseting Metable Records
      *
      * @param  array $records null
@@ -219,6 +231,7 @@ trait IsMetable
     public function upsertingMetables(array $records = [])
     {
         $records = $this->refineMetables($records);
+
         return Metable::upsert(
             $records,
             ['metable_id', 'metable_type', 'name'],
@@ -239,25 +252,30 @@ trait IsMetable
         $metalist = [];
         if (is_array($name) && !array_is_list($name)) {
             $group = is_null($group) && is_string($value) ? $value : null;
-            $metalist = $this->refineMetablesList($name, $group);
+            $metalist = $this->refineMetables($name, $group);
         } else {
             $metalist[$name] = [
                 'name' => $name,
                 'value' => $value,
+                'group' => $group,
             ];
-
-            if (!is_null($group)) $metalist[$name]['group'] = $group;
 
             $metalist[$name]['metable_id'] = $this->getKey();
             $metalist[$name]['metable_type'] = $this->getMorphClass();
         }
 
 
-        $this->metalist()->upsert($this->refineMetables($metalist), [
-            'name',
-            'metable_id',
-            'metable_type',
-        ], ['value']);
+        $this->metalist()->upsert(
+            $this->refineMetables($metalist),
+            [
+                'name',
+                'metable_id',
+                'metable_type',
+            ],
+            [
+                'value',
+            ]
+        );
     }
 
     /**
@@ -306,7 +324,7 @@ trait IsMetable
 
     /**
      * Get Meta by group
-     * 
+     *
      * @param  string $group
      * @return Collection
      */
@@ -323,17 +341,17 @@ trait IsMetable
      * @param  string|null $group
      * @return Metable
      */
-    protected function modelizeMetable(string $name = '', $value = '', string $group = null): Metable
+    protected function modelizeMetable(string $name = '', $value = null, string $group = null): Metable
     {
         $meta = new Metable([
             'name' => $name,
-            'value' => $value,
+            'metable_id' => $this->getkey(),
+            'metable_type' => $this->getMorphClass(),
         ]);
+        
+        if(!isset($group)) $meta->group = $group;
 
-        if (!is_null($group)) $meta->group = $group;
-
-        $meta->metable_type = $this->getMorphClass();
-        $meta->metable_id = $this->getKey();
+        $meta->value = $value;
 
         return $meta;
     }
@@ -350,10 +368,14 @@ trait IsMetable
         $metalist = [];
 
         foreach ($list as $key => $val) {
+            $ename  = is_array($val) && array_key_exists('name', $val) ? $val['name'] : $key;
             $evalue = is_array($val) && array_key_exists('value', $val) ? $val['value'] : $val;
             $egroup = is_array($val) && array_key_exists('group', $val) ? $val['group'] : $group;
+
+            $evalue = is_string($evalue) ? $evalue : serialize($evalue);
+            
             $metalist[$key] = [
-                'name' => $key,
+                'name' => $ename,
                 'value' => $evalue,
                 'group' => $egroup,
                 'metable_id' => $this->getKey(),
@@ -367,21 +389,16 @@ trait IsMetable
     /**
      * Get Default Metable Records
      *
-     * @param  array $records
      * @return array
      */
-    protected function getDefaultMetables(array $records = []): array
+    protected function getDefaultMetables(): array
     {
-        $metables = collect();
         $defaults = method_exists($this, 'defaultMetables') ? $this->defaultMetables() : [];
 
-        if (count($defaults) > 1) {
-            $metables->push($defaults);
-            $metables = $metables->merge($records);
-        } else {
-            $metables->push($records);
+        if (!is_array($defaults) || (!empty($defaults) && !Arr::isAssoc($defaults))) {
+            throw new \RuntimeException('Method `defaultMetables` should return an assoicative array!');
         }
 
-        return $metables->toArray();
+        return $this->refineMetables($defaults);
     }
 }
