@@ -47,13 +47,6 @@ class Metable extends Model
     ];
 
     /**
-     * Queued Value
-     *
-     * @var mixed
-     */
-    protected $queuedValue;
-
-    /**
      * Metable Relation.
      *
      * @return MorphTo

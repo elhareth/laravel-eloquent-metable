@@ -6,6 +6,7 @@ use ArrayAccess;
 use InvalidArgumentException;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection as BaseCollection;
 
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -21,6 +22,13 @@ trait IsMetable
      * @var array
      */
     protected array $queuedMetables = [];
+
+    /**
+     * Cahced Metables
+     * 
+     * @var Collection|array
+     */
+    protected $cachedMetables;
 
     /**
      * Register trait boot function
@@ -43,6 +51,19 @@ trait IsMetable
             }
             $model->deleteMetaRecords();
         });
+    }
+
+    /**
+     * 
+     * 
+     */
+    protected function initializeIsMetable()
+    {
+        if (!isset($this->cachedMetables)) {
+            if ($this->relationLoaded('metalist')) {
+                $this->cacheMetables();
+            }
+        }
     }
 
     /**
@@ -143,6 +164,28 @@ trait IsMetable
     }
 
     /**
+     * Cache metables as key=>value
+     * 
+     * @return void
+     */
+    protected function cacheMetables()
+    {
+        $this->cachedMetables = $this->metalist->mapWithKeys(function ($meta, $key) {
+            return [$meta->name => $meta->value];
+        });
+    }
+
+    /**
+     * Get cached metables
+     * 
+     * @return Collection
+     */
+    public function getCachedMetables(): BaseCollection
+    {
+        return $this->cachedMetables ?: collect();
+    }
+
+    /**
      *
      *
      */
@@ -227,6 +270,10 @@ trait IsMetable
      */
     public function getMeta(string $name, $default = null)
     {
+        if ($this->getCachedMetables()->has($name)) {
+            return $this->getCachedMetables()->get($name);
+        }
+
         if ($this->hasMeta($name)) {
             return $this->metalist()->where('name', $name)->first()?->value;
         }
