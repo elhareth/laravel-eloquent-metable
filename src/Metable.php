@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Metable extends Model
 {
-    use HasUlid;
+    use HasUlids;
 
     /**
      * Indicates if the model should be timestamped.
