@@ -238,12 +238,13 @@ trait IsMetable
      * Get Meta
      *
      * @param  string $name
-     * @param  mixed  $default Fallback value if no Metable is found.
+     * @param  mixed  $default  Fallback value if no Metable is found.
+     * @param  bool   $nullable If false null treated as not found
      * @return mixed
      */
-    public function getMeta(string $name, $default = null)
+    public function getMeta(string $name, $default = null, bool $nullable = false)
     {
-        if ($this->hasMeta($name)) {
+        if ($this->hasMeta($name, $nullable)) {
             return $this->metalist()->where('name', $name)->first()?->value;
         }
 
@@ -254,11 +255,14 @@ trait IsMetable
      * Check meta existance
      *
      * @param  string $name
+     * @param  bool   $nullable If false null treated as not exists
      * @return bool
      */
-    public function hasMeta(string $name): bool
+    public function hasMeta(string $name, bool $nullable = false): bool
     {
-        return $this->metalist()->where('name', $name)->first() ? true : false;
+        return $this->metalist()->where('name', $name)->when(!$nullable, function (Builder $query) {
+            $query->whereNotNull('value');
+        })->first() ? true : false;
     }
 
     /**

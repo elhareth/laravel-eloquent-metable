@@ -30,6 +30,7 @@ class MetaValueCast implements CastsAttributes
             's:',
             'o:',
             'O:',
+            'N;',
         ];
 
         if (str($value)->startsWith($serializedStarts)) {
