@@ -109,10 +109,15 @@ You can retrieve the value of the meta at a given key with the ``getMeta()`` met
  $gender = $user->getMeta('gender');
 ```
 
-You may pass a second parameter to the ``getMeta()`` method in order to specify a default value to return if no meta has been set at that key.
+The method `getMeta` accepts three arguments; `getMeta(name: $name, default: $default nullable $nullable)`
+The first the name of meta record
+The second parameter to specify a default value to return if no meta has been set at that key.
+The third parameter is a boolean to set whether to treat null values as not found
 
 ```php
  $user->getMeta('gender', 'male'); // will return 'male' if not set
+ $user->getMeta('gender', 'male', false); // will return male if not set or if value is null
+ $user->getMeta('gender', 'male', true); // will return male if not set or null if is set to null
 ```
 
 You may retrieve a collection of meta depending on specifec group
@@ -125,13 +130,18 @@ You may retrieve a collection of meta depending on specifec group
 
 You can check if a value has been assigned to a given key with the ``hasMeta()`` method.
 This method will return true if a record is found on database.
-
+You may pass another boolean value to control how to treat null values.
 
 ```php
  if ($user->hasMeta('gender')) {
     // ...
  }
+
+ if ($user->has(name: 'gender', nullable: true)) {
+    // ...
+ }
 ```
+
 
 #### Queued Metables
 
