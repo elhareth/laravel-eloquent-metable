@@ -12,12 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('metables', function (Blueprint $table) {
+            $table->ulid('id')->primary();
             $table->ulidMorphs('metable');
             $table->string('name', 50);
             $table->longText('value')->nullable();
             $table->string('group', 20)->nullable();
 
-            $table->primary([
+            $table->unique([
                 'name',
                 'metable_id',
                 'metable_type',

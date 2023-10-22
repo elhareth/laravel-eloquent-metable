@@ -6,8 +6,12 @@ All notable changes to `laravel-eloquent-metable` will be documented in this fil
 
 - initial release
 
-## 1.0.1 - 2023-10-23
+## 1.0.1 - 2023-09-01
 
 - Added : Null value to `MetaValueCast`
 - Added : Access to nullable values
 - Enhancments!
+
+## 1.1.0 - 2023-10-10
+
+- Adding ulid primary key to `Metable` model.
