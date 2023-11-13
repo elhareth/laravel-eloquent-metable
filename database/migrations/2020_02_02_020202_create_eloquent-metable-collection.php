@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('metables', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->ulidMorphs('metable');
+            $table->uuidMorphs('metable');
             $table->string('name', 50);
             $table->longText('value')->nullable();
             $table->string('group', 20)->nullable();
